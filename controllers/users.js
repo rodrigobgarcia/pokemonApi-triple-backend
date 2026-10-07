@@ -20,4 +20,12 @@ const createUser = (req, res, next) => {
     .catch(next);
 };
 
-module.exports = { createUser };
+const getCurrentUser = (req, res, next) => {
+    User.findById(req.user._id)
+        .orFail()
+        .then((user) => res.send(user))
+        .catch(next)
+
+};
+
+module.exports = { createUser, getCurrentUser };
