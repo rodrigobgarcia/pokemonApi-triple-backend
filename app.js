@@ -2,8 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const {auth} = require("./middlewares/auth")
-const {createUser} = require("./controllers/users")
-const routerUsers = require("./routes/users")
+const {createUser, login} = require("./controllers/users")
+const routerUsers = require("./routes/users");
+const routerTeams = require("./routes/teams")
+const errorHandler = require('./middlewares/error');
 //const cors = require('cors');
 
 
@@ -20,11 +22,13 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use(express.json());
 // app.use(cors());
 app.post('/signup', createUser);
+app.post('/signin', login);
 app.use("/users", auth, routerUsers );
-//app.use(errorHandler);
+app.use("/teams", auth, routerTeams);
 app.use((req, res) => {
   res.status(404).json({ message: 'A solicitação não foi encontrada' });
 });
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);

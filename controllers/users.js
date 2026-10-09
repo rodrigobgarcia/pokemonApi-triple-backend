@@ -1,5 +1,8 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const  jwt = require("jsonwebtoken");
+const {UnauthorizedError} = require("../errors/UnauthorizedError");
+const { JWT_SECRET} = require("../utils/config")
 
 const createUser = (req, res, next) => {
   const {
@@ -25,7 +28,27 @@ const getCurrentUser = (req, res, next) => {
         .orFail()
         .then((user) => res.send(user))
         .catch(next)
-
 };
 
-module.exports = { createUser, getCurrentUser };
+const login = (req, res, next) => {
+  const {email, password} = req.body;
+
+  User.findOne({email})
+    .select('+password')
+    .then((user) => {
+      if(!user) {
+        return next(new Error ("Email ou senha incorretos"));
+      }
+      return bcrypt.compare(password, user.password)
+        .then((isValid) => {
+          if(!isValid) {
+            return next(new UnauthorizedError("Email ou senha incorretos"));
+          }
+          const token = jwt.sign({_id: user._id}, JWT_SECRET, {expiresIn:"7d"});
+          return res.send({token});
+        })
+    })
+    .catch(next);
+};
+
+module.exports = { createUser, getCurrentUser, login};
