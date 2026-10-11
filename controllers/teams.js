@@ -1,6 +1,7 @@
 const Team = require("../models/team");
 const ForbiddenError = require("../errors/ForbiddenError");
-const { UPDATE_OPTIONS } = require("../utils/constants");
+const BadRequestError = require("../errors/BadRequestError")
+const { UPDATE_OPTIONS, TEAM_SIZE } = require("../utils/constants");
 
 const getTeams = (req, res, next) => {
     Team.find({owner: req.user._id})
@@ -43,4 +44,41 @@ const renameTeam = (req, res, next) => {
         .catch(next);
 };
 
-module.exports = { getTeams, createTeam, deleteTeam, renameTeam };
+const addMember = (req, res, next) => {
+    const member = req.body;
+    Team.findById(req.params.teamId)
+        .orFail()
+        .then((team) => {
+            if (team.owner.toString() !== req.user._id) {
+                return next(new ForbiddenError('Você não pode alterar este time'));
+            }
+            if (team.members.some((item) => item.id === member.id)) {
+                return next (new BadRequestError("Este Pokemon já está no time"));
+            }
+            if (team.members.length >= TEAM_SIZE) {
+                return next (new BadRequestError("Estime time já está completo"));
+            }
+            team.members.push(member);
+            return team.save()
+                .then((savedTeam) => res.send(savedTeam));
+        })
+        .catch(next)
+}
+
+const removeMember = (req, res, next) => {
+    const pokemonId = toString(req.params.pokemonId)
+
+    Team.findById(req.params.teamId)
+        .orFail()
+        .then((team) => {
+            if (team.owner.toString() !== req.user._id) {
+                return next(new ForbiddenError('Você não pode alterar este time'));
+            }
+            team.members = team.members.filter((item) => item.id !== pokemonId);
+            return team.save()
+                .then((savedTeam) => res.send(savedTeam));
+        })
+        .catch(next);
+};
+
+module.exports = { getTeams, createTeam, deleteTeam, renameTeam, addMember, removeMember };

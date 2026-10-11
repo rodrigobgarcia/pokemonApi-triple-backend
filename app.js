@@ -6,6 +6,8 @@ const {createUser, login} = require("./controllers/users")
 const routerUsers = require("./routes/users");
 const routerTeams = require("./routes/teams")
 const errorHandler = require('./middlewares/error');
+const { Segments, celebrate } = require('celebrate');
+const { signupSchema, signinSchema, teamBodySchema } = require('./utils/schemas');
 //const cors = require('cors');
 
 
@@ -21,10 +23,26 @@ mongoose.connect(process.env.MONGODB_URI)
 
 app.use(express.json());
 // app.use(cors());
-app.post('/signup', createUser);
-app.post('/signin', login);
+app.post(
+  '/signup',
+  celebrate({ [Segments.BODY]: signupSchema }),
+  createUser
+);
+
+app.post(
+  '/signin',
+  celebrate({ [Segments.BODY]: signinSchema}),
+  login
+);
+
 app.use("/users", auth, routerUsers );
-app.use("/teams", auth, routerTeams);
+
+app.use(
+  "/teams", 
+  auth,
+  celebrate({ [Segments.BODY]: teamBodySchema}),
+  routerTeams
+);
 app.use((req, res) => {
   res.status(404).json({ message: 'A solicitação não foi encontrada' });
 });
