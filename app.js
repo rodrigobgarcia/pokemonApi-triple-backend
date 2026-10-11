@@ -1,48 +1,42 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const {auth} = require("./middlewares/auth")
-const {createUser, login} = require("./controllers/users")
-const routerUsers = require("./routes/users");
-const routerTeams = require("./routes/teams")
-const errorHandler = require('./middlewares/error');
+const cors = require('cors');
 const { Segments, celebrate } = require('celebrate');
-const { signupSchema, signinSchema, teamBodySchema } = require('./utils/schemas');
-//const cors = require('cors');
-
+const { auth } = require('./middlewares/auth');
+const requestLogger = require('./middlewares/logger');
+const { createUser, login } = require('./controllers/users');
+const routerUsers = require('./routes/users');
+const routerTeams = require('./routes/teams');
+const errorHandler = require('./middlewares/error');
+const { signupSchema, signinSchema } = require('./utils/schemas');
 
 const app = express();
-//O banco vai ser um MongoDB Atlas - banco foi criado e acessado pelo desktop / precisa conectar;
-//Precisa criar o banco no Mongo
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, MONGODB_URI, FRONTEND_URL } = process.env;
 
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log("Mongoose Conectado"))
-    .catch((err) => console.log("Erro ao conectar: ", err.message))
-
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('Conectado ao MongoDB'))
+  .catch((err) => console.log('Erro ao conectar:', err.message));
 
 app.use(express.json());
-// app.use(cors());
+app.use(cors({ origin: ['http://localhost:5173', FRONTEND_URL] }));
+app.use(requestLogger);
+
 app.post(
   '/signup',
   celebrate({ [Segments.BODY]: signupSchema }),
-  createUser
+  createUser,
 );
 
 app.post(
   '/signin',
-  celebrate({ [Segments.BODY]: signinSchema}),
-  login
+  celebrate({ [Segments.BODY]: signinSchema }),
+  login,
 );
 
-app.use("/users", auth, routerUsers );
+app.use('/users', auth, routerUsers);
+app.use('/teams', auth, routerTeams);
 
-app.use(
-  "/teams", 
-  auth,
-  celebrate({ [Segments.BODY]: teamBodySchema}),
-  routerTeams
-);
 app.use((req, res) => {
   res.status(404).json({ message: 'A solicitação não foi encontrada' });
 });

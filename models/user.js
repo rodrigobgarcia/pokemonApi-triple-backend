@@ -14,25 +14,13 @@ const userSchema = new mongoose.Schema({
         unique: true,
         validate: {
             validator: validator.isEmail,
-            message: (props) => `${props.value} não é uma email válido`,
+            message: (props) => `${props.value} não é um email válido`,
         },
     },
     password: {
         type: String,
         required: true,
-        unique: false,
-        validate: {
-            validator: function(value) {
-                return validator.isStrongPassword(value, {
-                    minLength: 8,
-                    minLowercase: 1,
-                    minUppercase: 1,
-                    minNumbers: 1,
-                    minSymbols: 1
-                });
-            },
-            message: (props) => `Sua senha não é forte`,
-        }
+        select: false,
     },
 });
 

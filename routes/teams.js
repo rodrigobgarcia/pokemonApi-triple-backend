@@ -1,13 +1,42 @@
 const routerTeams = require("express").Router();
-const { getTeams, createTeam, deleteTeam, renameTeam, addMember, removeMember } = require("../controllers/teams");
-const { signupSchema, signinSchema, memberSchema, teamBodySchema, renameSchema, teamIdSchema, memberParamsSchema } = require("../utils/schemas")
+const { celebrate, Segments } = require("celebrate");
+const {
+  getTeams,
+  createTeam,
+  deleteTeam,
+  renameTeam,
+  addMember,
+  removeMember,
+} = require("../controllers/teams");
+const {
+  memberSchema,
+  teamBodySchema,
+  renameSchema,
+  teamIdSchema,
+  memberParamsSchema,
+} = require("../utils/schemas");
 
 routerTeams.get("/", getTeams);
-routerTeams.post("/", createTeam);
-routerTeams.delete("/:teamId", deleteTeam);
-routerTeams.patch("/:teamId", renameTeam);
-routerTeams.post("/:teamId/members", addMember);
-routerTeams.delete("/:teamId/members/:pokemonId", removeMember);
-
+routerTeams.post("/", celebrate({ [Segments.BODY]: teamBodySchema }), createTeam);
+routerTeams.patch(
+  "/:teamId",
+  celebrate({ [Segments.PARAMS]: teamIdSchema, [Segments.BODY]: renameSchema }),
+  renameTeam,
+);
+routerTeams.delete(
+  "/:teamId",
+  celebrate({ [Segments.PARAMS]: teamIdSchema }),
+  deleteTeam,
+);
+routerTeams.post(
+  "/:teamId/members",
+  celebrate({ [Segments.PARAMS]: teamIdSchema, [Segments.BODY]: memberSchema }),
+  addMember,
+);
+routerTeams.delete(
+  "/:teamId/members/:pokemonId",
+  celebrate({ [Segments.PARAMS]: memberParamsSchema }),
+  removeMember,
+);
 
 module.exports = routerTeams;

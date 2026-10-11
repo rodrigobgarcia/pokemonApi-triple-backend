@@ -23,7 +23,7 @@ const deleteTeam = (req, res, next) => {
         .orFail()
         .then((team) => {
             if (team.owner.toString() !== req.user._id) {
-                return next(new ForbiddenError('Você não pode deletar esse time'));
+                return next(new ForbiddenError('Você não pode apagar este time'));
             }
             return Team.findByIdAndDelete(req.params.teamId)
                 .then((deletedTeam) => res.send(deletedTeam));
@@ -32,13 +32,15 @@ const deleteTeam = (req, res, next) => {
 };
 
 const renameTeam = (req, res, next) => {
+    const { name } = req.body;
+
     Team.findById(req.params.teamId)
         .orFail()
         .then((team) => {
             if (team.owner.toString() !== req.user._id) {
-                return next(new ForbiddenError('Você não pode renomear esse time'));
+                return next(new ForbiddenError('Você não pode alterar este time'));
             }
-            return team.findByIdAndUpdate(req.params.teamId, req.body.name, UPDATE_OPTIONS)
+            return Team.findByIdAndUpdate(req.params.teamId, { name }, UPDATE_OPTIONS)
                 .then((updatedTeam) => res.send(updatedTeam));
         })
         .catch(next);
@@ -53,10 +55,10 @@ const addMember = (req, res, next) => {
                 return next(new ForbiddenError('Você não pode alterar este time'));
             }
             if (team.members.some((item) => item.id === member.id)) {
-                return next (new BadRequestError("Este Pokemon já está no time"));
+                return next(new BadRequestError("Este Pokémon já está no time"));
             }
             if (team.members.length >= TEAM_SIZE) {
-                return next (new BadRequestError("Estime time já está completo"));
+                return next(new BadRequestError("Este time já está cheio"));
             }
             team.members.push(member);
             return team.save()
@@ -66,7 +68,7 @@ const addMember = (req, res, next) => {
 }
 
 const removeMember = (req, res, next) => {
-    const pokemonId = toString(req.params.pokemonId)
+    const pokemonId = Number(req.params.pokemonId);
 
     Team.findById(req.params.teamId)
         .orFail()

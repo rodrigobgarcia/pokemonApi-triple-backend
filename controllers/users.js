@@ -37,7 +37,7 @@ const login = (req, res, next) => {
     .select('+password')
     .then((user) => {
       if(!user) {
-        return next(new Error ("Email ou senha incorretos"));
+        return next(new UnauthorizedError("Email ou senha incorretos"));
       }
       return bcrypt.compare(password, user.password)
         .then((isValid) => {
