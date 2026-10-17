@@ -1,21 +1,109 @@
-# pokemonApi-triple-backend
+Aqui está uma versão limpa e formatada, ideal para você **copiar e colar** diretamente no seu arquivo `README.md` no GitHub:
 
-API do PokéTimes. Em desenvolvimento local: `http://localhost:3000`.
+```markdown
+# PokéTimes API
 
-## Rotas
+API RESTful para gerenciamento de usuários e times de Pokémon.
 
-| Método | Rota | Precisa de token? | Corpo | Responde |
-|---|---|---|---|---|
-| POST | `/signup` | não | `{ name, email, password }` | `201` usuário (sem senha) |
-| POST | `/signin` | não | `{ email, password }` | `200 { token }` |
-| GET | `/users/me` | sim | | `200` usuário |
-| GET | `/teams` | sim | | `200` só os times do dono |
-| POST | `/teams` | sim | `{ name, member? }` | `201` time |
-| PATCH | `/teams/:teamId` | sim (dono) | `{ name }` | `200` time |
-| DELETE | `/teams/:teamId` | sim (dono) | | `200` time apagado |
-| POST | `/teams/:teamId/members` | sim (dono) | `{ id, name, image, types }` | `200` time atualizado |
-| DELETE | `/teams/:teamId/members/:pokemonId` | sim (dono) | | `200` time atualizado |
+---
 
-Um membro tem o formato `{ id, name, image, types }`. O `id` é o número do Pokémon. O `_id` é o id que o MongoDB dá para o time.
+## 🚀 Tecnologias
 
-Rotas protegidas usam o header `Authorization: Bearer <token>`.
+- **Node.js**
+- **Express**
+- **MongoDB** / Mongoose
+- **JWT** (JSON Web Token)
+
+---
+
+## 💻 Como Rodar o Projeto
+
+1. **Clonar o repositório:**
+   ```bash
+   git clone [https://github.com/rodrigobgarcia/pokemonApi-triple-backend.git](https://github.com/rodrigobgarcia/pokemonApi-triple-backend.git)
+
+```
+
+2. **Acessar a pasta do projeto:**
+```bash
+cd pokemonApi-triple-backend
+
+```
+
+
+3. **Instalar as dependências:**
+```bash
+npm install
+
+```
+
+
+4. **Executar em modo de desenvolvimento:**
+```bash
+npm run dev
+
+```
+
+
+
+> **Nota:** O servidor iniciará por padrão em `http://localhost:3000`.
+
+---
+
+## 🔐 Autenticação
+
+Para acessar as rotas protegidas, inclua o cabeçalho HTTP com o token recebido no login:
+
+```http
+Authorization: Bearer <seu_token_jwt>
+
+```
+
+---
+
+## 🚦 Rotas da API
+
+### 👤 Autenticação e Usuários
+
+| Método | Rota | Autenticação | Descrição |
+| --- | --- | --- | --- |
+| `POST` | `/signup` | Pública | Cadastra um novo usuário. |
+| `POST` | `/signin` | Pública | Realiza login e retorna o token JWT. |
+| `GET` | `/users/me` | Protegida | Retorna os dados do usuário autenticado. |
+
+### 🐉 Times (`/teams`)
+
+| Método | Rota | Autenticação | Descrição |
+| --- | --- | --- | --- |
+| `GET` | `/teams` | Protegida | Lista os times do usuário logado. |
+| `POST` | `/teams` | Protegida | Cria um novo time. |
+| `PATCH` | `/teams/:teamId` | Protegida (Dono) | Atualiza o nome de um time. |
+| `DELETE` | `/teams/:teamId` | Protegida (Dono) | Remove um time. |
+| `POST` | `/teams/:teamId/members` | Protegida (Dono) | Adiciona um Pokémon ao time. |
+| `DELETE` | `/teams/:teamId/members/:pokemonId` | Protegida (Dono) | Remove um Pokémon do time. |
+
+---
+
+## 📝 Formato dos Objetos
+
+### Pokémon (Membro do Time)
+
+```json
+{
+  "id": 25,
+  "name": "pikachu",
+  "image": "[https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png)",
+  "types": ["electric"]
+}
+
+```
+
+> **Observação:** O parâmetro `id` corresponde ao número do Pokémon na PokéAPI, enquanto a propriedade `_id` representa o identificador gerado pelo MongoDB para cada time.
+
+---
+
+## 👤 Autor
+
+Desenvolvido por **[Rodrigo B. Garcia]
+
+Link to deploy: https://pokemon-api-tripleten-frontend.vercel.app/
